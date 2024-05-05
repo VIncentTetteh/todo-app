@@ -1,0 +1,45 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: "Todo-List-App"
+
+# Default config for all profiles
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+jwt:
+  rsa-private-key: classpath:certs/privateKey.pem
+  rsa-public-key: classpath:certs/publicKey.pem
+
+---
+# Dev profile
+spring:
+  config:
+    activate:
+      on-profile: "dev"
+
+  # Database Configuration for Dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/newtodo
+    password: 8462368
+    username: newuser
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+---
+# Production profile
+spring:
+  config:
+    activate:
+      on-profile: "prod"
+
+# Database Configuration for Production
+  datasource:
+    url: jdbc:postgresql://production-host:5432/prod_database
+    username: prod_username
+    password: prod_password
+    driver-class-name: org.postgresql.Driver
+
