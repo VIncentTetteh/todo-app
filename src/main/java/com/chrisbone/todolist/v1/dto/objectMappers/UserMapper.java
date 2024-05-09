@@ -16,9 +16,11 @@ public class UserMapper {
                 .email(userRequestDTO.email())
                 .firstName(userRequestDTO.firstName())
                 .lastName(userRequestDTO.lastName())
+                .username(userRequestDTO.username())
                 .roles(Role.ROLE_USER)
                 .password(passwordEncoder.encode(userRequestDTO.password()))
                 .mobileNumber(userRequestDTO.mobileNumber())
+                .profileImageUrl(userRequestDTO.profileImageUrl())
                 .build();
 
     }

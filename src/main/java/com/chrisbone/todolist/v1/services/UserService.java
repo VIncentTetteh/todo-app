@@ -5,6 +5,7 @@ import com.chrisbone.todolist.v1.dto.responses.UserResponseDTO;
 import com.chrisbone.todolist.v1.models.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface UserService {
@@ -13,4 +14,6 @@ public interface UserService {
     void deleteUser(UUID id);
     UserResponseDTO getUserById(UUID id);
     List<UserResponseDTO> getAllUsers();
+
+    void partialUpdateUser(UUID userId, Map<String, Object> updates);
 }

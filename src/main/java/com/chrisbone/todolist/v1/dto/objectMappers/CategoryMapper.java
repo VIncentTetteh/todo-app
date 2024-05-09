@@ -12,6 +12,7 @@ public class CategoryMapper {
     public Category convertToCategory(CategoryRequestDTO categoryRequestDTO){
         return Category.builder()
                 .name(categoryRequestDTO.name())
+                .todoList(categoryRequestDTO.todoList())
                 .build();
     }
 }

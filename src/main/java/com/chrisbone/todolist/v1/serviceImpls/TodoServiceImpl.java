@@ -10,10 +10,12 @@ import com.chrisbone.todolist.v1.services.TodoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -76,5 +78,23 @@ public class TodoServiceImpl implements TodoService {
         return todos.stream()
                 .map(todo -> modelMapper.map(todo, TodoResponseDTO.class))
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public void partialUpdateTodo(UUID id, Map<String, Object> updates) {
+        Todo existingTodo = todoRepository.findById(id)
+                .orElseThrow(() -> new TodoNotFoundException("Todo not found with id: " + id));
+
+        // Apply partial updates to existing todo
+        applyPartialUpdates(existingTodo, updates);
+
+        // Save the updated todo
+        todoRepository.save(existingTodo);
+    }
+
+    private void applyPartialUpdates(Todo todo, Map<String, Object> updates) {
+        // Apply updates using BeanUtils from Spring
+        BeanUtils.copyProperties(updates, todo, "id", "createdBy", "createdAt", "updatedAt");
     }
 }

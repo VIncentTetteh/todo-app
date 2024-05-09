@@ -5,17 +5,21 @@ import com.chrisbone.todolist.v1.dto.requests.CategoryRequestDTO;
 import com.chrisbone.todolist.v1.dto.responses.CategoryResponseDTO;
 import com.chrisbone.todolist.v1.exceptions.CategoryAlreadyExistException;
 import com.chrisbone.todolist.v1.exceptions.CategoryNotFoundException;
+import com.chrisbone.todolist.v1.exceptions.TodoNotFoundException;
 import com.chrisbone.todolist.v1.exceptions.UserNotFoundException;
 import com.chrisbone.todolist.v1.models.Category;
+import com.chrisbone.todolist.v1.models.Todo;
 import com.chrisbone.todolist.v1.repositories.CategoryRepository;
 import com.chrisbone.todolist.v1.services.CategoryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -77,5 +81,22 @@ public class CategoryServiceImpl implements CategoryService {
         return categories.stream()
                 .map(category -> modelMapper.map(category, CategoryResponseDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void partialUpdateCategory(UUID id, Map<String, Object> updates) {
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new TodoNotFoundException("Todo not found with id: " + id));
+
+        // Apply partial updates to existing category
+        applyPartialUpdates(existingCategory, updates);
+
+        // Save the updated todo
+        categoryRepository.save(existingCategory);
+    }
+
+    private void applyPartialUpdates(Category category, Map<String, Object> updates) {
+        // Apply updates using BeanUtils from Spring
+        BeanUtils.copyProperties(updates, category, "id", "createdBy", "createdAt", "updatedAt");
     }
 }

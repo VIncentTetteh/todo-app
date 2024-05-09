@@ -1,11 +1,13 @@
 package com.chrisbone.todolist.v1.models;
 
 import com.chrisbone.todolist.v1.configs.BaseEntity;
+import com.chrisbone.todolist.v1.configs.ValidPassword;
 import com.chrisbone.todolist.v1.enums.Role;
 import com.chrisbone.todolist.v1.utils.EntityListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,13 +36,14 @@ public class User extends BaseEntity {
     @Column(name = "username")
     private String username;
 
-    @Email(message = "provide a valid email")
+    @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}",flags = Pattern.Flag.CASE_INSENSITIVE)
     @NotNull(message = "email can not be empty")
     @Column(name = "email",unique = true)
     private String email;
 
     @NotNull(message = "password can not be empty")
-    @Column(name = "password",length = 14)
+    @Column(name = "password")
+//    @ValidPassword
     private String password;
 
     @NotNull(message = "mobile number can not be empty")

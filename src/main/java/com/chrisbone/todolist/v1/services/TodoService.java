@@ -5,6 +5,7 @@ import com.chrisbone.todolist.v1.dto.responses.TodoResponseDTO;
 import com.chrisbone.todolist.v1.models.Todo;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface TodoService {
@@ -14,4 +15,5 @@ public interface TodoService {
     TodoResponseDTO getTodoById(UUID id);
     List<TodoResponseDTO> getAllTodos();
     List<TodoResponseDTO> getTodosByUserId(UUID id);
+    void partialUpdateTodo(UUID id, Map<String, Object> updates);
 }

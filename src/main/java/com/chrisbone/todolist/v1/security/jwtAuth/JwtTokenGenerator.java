@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtTokenGenerator {
-    private JwtEncoder jwtEncoder;
+    private final JwtEncoder jwtEncoder;
 
     public String generateAccessToken(Authentication authentication) {
 

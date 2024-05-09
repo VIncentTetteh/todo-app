@@ -5,6 +5,7 @@ import com.chrisbone.todolist.v1.dto.responses.CategoryResponseDTO;
 import com.chrisbone.todolist.v1.models.Category;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface CategoryService {
@@ -14,4 +15,6 @@ public interface CategoryService {
     CategoryResponseDTO getCategoryById(UUID id);
     List<CategoryResponseDTO> getAllCategories();
     List<CategoryResponseDTO> getCategoriesByUserId(UUID id);
+
+    void partialUpdateCategory(UUID categoryId, Map<String, Object> updates);
 }
