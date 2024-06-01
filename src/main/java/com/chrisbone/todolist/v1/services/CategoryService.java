@@ -10,11 +10,11 @@ import java.util.UUID;
 
 public interface CategoryService {
     CategoryResponseDTO createCategory(CategoryRequestDTO category);
-    CategoryResponseDTO updateCategory(UUID id, CategoryRequestDTO category);
-    void deleteCategory(UUID id);
-    CategoryResponseDTO getCategoryById(UUID id);
+    CategoryResponseDTO updateCategory(UUID categoryId, CategoryRequestDTO category);
+    void deleteCategory(UUID categoryId,UUID user_id);
+    CategoryResponseDTO getCategoryById(UUID categoryId,UUID user_id);
     List<CategoryResponseDTO> getAllCategories();
-    List<CategoryResponseDTO> getCategoriesByUserId(UUID id);
+    List<CategoryResponseDTO> getCategoriesByUserId(UUID userId);
 
-    void partialUpdateCategory(UUID categoryId, Map<String, Object> updates);
+    void partialUpdateCategory(UUID categoryId,UUID user_id, Map<String, Object> updates);
 }

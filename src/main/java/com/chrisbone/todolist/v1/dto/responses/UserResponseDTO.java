@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResponseDTO extends BaseResponse{
+
         @JsonProperty("userId")
         private UUID id;
 

@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -22,6 +24,6 @@ public class AuthResponseDTO {
     @JsonProperty("token_type")
     private TokenType tokenType;
 
-    @JsonProperty("user_name")
-    private String userName;
+    @JsonProperty("user_id")
+    private UUID id;
 }

@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,7 +31,7 @@ public class JwtRefreshTokenFilter extends OncePerRequestFilter {
 
     private  final RSAKeyRecord rsaKeyRecord;
     private final JwtTokenUtils jwtTokenUtils;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepo;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -61,7 +62,7 @@ public class JwtRefreshTokenFilter extends OncePerRequestFilter {
 
             if (!userName.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
                 //Check if refreshToken isPresent in database and is valid
-                var isRefreshTokenValidInDatabase = refreshTokenRepository.findByRefreshToken(jwtRefreshToken.getTokenValue())
+                var isRefreshTokenValidInDatabase = refreshTokenRepo.findByRefreshToken(jwtRefreshToken.getTokenValue())
                         .map(refreshTokenEntity -> !refreshTokenEntity.isRevoked())
                         .orElse(false);
 

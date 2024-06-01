@@ -4,6 +4,8 @@ import com.chrisbone.todolist.v1.dto.objectMappers.UserMapper;
 import com.chrisbone.todolist.v1.dto.requests.UserRequestDTO;
 import com.chrisbone.todolist.v1.dto.responses.AuthResponseDTO;
 import com.chrisbone.todolist.v1.enums.TokenType;
+import com.chrisbone.todolist.v1.exceptions.InvalidTokenException;
+import com.chrisbone.todolist.v1.exceptions.UserAlreadyExistsException;
 import com.chrisbone.todolist.v1.models.RefreshToken;
 import com.chrisbone.todolist.v1.models.User;
 import com.chrisbone.todolist.v1.repositories.RefreshTokenRepository;
@@ -34,101 +36,92 @@ public class AuthService {
     private final UserMapper userMapper;
 
     public AuthResponseDTO getJwtTokensAfterAuthentication(Authentication authentication, HttpServletResponse response) {
-        try
-        {
+        try {
             String accessToken = jwtTokenGenerator.generateAccessToken(authentication);
             String refreshToken = jwtTokenGenerator.generateRefreshToken(authentication);
 
             var userInfo = userRepository.findByEmail(authentication.getName())
-                    .orElseThrow(()->{
-                        log.error("[AuthService:userSignInAuth] User :{} not found",authentication.getName());
-                        return new ResponseStatusException(HttpStatus.NOT_FOUND,"USER NOT FOUND ");});
+                    .orElseThrow(() -> {
+                        log.error("[AuthService:userSignInAuth] User :{} not found", authentication.getName());
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "USER NOT FOUND");
+                    });
 
+            saveUserRefreshToken(userInfo, refreshToken);
+            createRefreshTokenCookie(response, refreshToken);
 
-            saveUserRefreshToken(userInfo,refreshToken);
-            creatRefreshTokenCookie(response,refreshToken);
-
-
-            log.info("[AuthService:userSignInAuth] Access token for user:{}, has been generated",userInfo.getUsername());
-            return  AuthResponseDTO.builder()
+            log.info("[AuthService:userSignInAuth] Access token for user:{}, has been generated", userInfo.getUsername());
+            return AuthResponseDTO.builder()
                     .accessToken(accessToken)
                     .accessTokenExpiry(60)
-                    .userName(userInfo.getUsername())
+                    .id(userInfo.getId())
                     .tokenType(TokenType.Bearer)
                     .build();
 
-
-        }catch (Exception e){
-            log.error("[AuthService:userSignInAuth]Exception while authenticating the user due to :"+e.getMessage());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Please Try Again");
+        } catch (Exception e) {
+            log.error("[AuthService:userSignInAuth] Exception while authenticating the user due to: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Please Try Again");
         }
-
-
     }
 
     public Object getAccessTokenUsingRefreshToken(String authorizationHeader) {
-
-        if(!authorizationHeader.startsWith(TokenType.Bearer.name())){
-            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Please verify your token type");
+        if (!authorizationHeader.startsWith(TokenType.Bearer.name())) {
+            throw new InvalidTokenException("Please verify your token type");
         }
 
         final String refreshToken = authorizationHeader.substring(7);
 
         var refreshTokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
-                .filter(tokens-> !tokens.isRevoked())
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Refresh token revoked"));
+                .filter(tokens -> !tokens.isRevoked())
+                .orElseThrow(() -> new InvalidTokenException("Refresh token revoked"));
 
         User userInfo = refreshTokenEntity.getUser();
-
-        Authentication authentication =  createAuthenticationObject(userInfo);
+        Authentication authentication = createAuthenticationObject(userInfo);
 
         String accessToken = jwtTokenGenerator.generateAccessToken(authentication);
 
-        return  AuthResponseDTO.builder()
+        return AuthResponseDTO.builder()
                 .accessToken(accessToken)
                 .accessTokenExpiry(5 * 60)
-                .userName(userInfo.getUsername())
+                .id(userInfo.getId())
                 .tokenType(TokenType.Bearer)
                 .build();
     }
 
-
-    public AuthResponseDTO registerUser(UserRequestDTO userRegistrationDto, HttpServletResponse httpServletResponse){
-
-        try{
-            log.info("[AuthService:registerUser]User Registration Started with :::{}",userRegistrationDto);
+    public AuthResponseDTO registerUser(UserRequestDTO userRegistrationDto, HttpServletResponse httpServletResponse) {
+        try {
+            log.info("[AuthService:registerUser] User Registration Started with :::{}", userRegistrationDto);
 
             Optional<User> user = userRepository.findByEmail(userRegistrationDto.email());
-            if(user.isPresent()){
-                throw new Exception("User Already Exist");
+            if (user.isPresent()) {
+                throw new UserAlreadyExistsException("User Already Exists");
             }
 
             User userDetailsEntity = userMapper.convertToUser(userRegistrationDto);
             Authentication authentication = createAuthenticationObject(userDetailsEntity);
 
-
             String accessToken = jwtTokenGenerator.generateAccessToken(authentication);
             String refreshToken = jwtTokenGenerator.generateRefreshToken(authentication);
 
             User savedUserDetails = userRepository.save(userDetailsEntity);
-            saveUserRefreshToken(userDetailsEntity,refreshToken);
+            saveUserRefreshToken(userDetailsEntity, refreshToken);
 
-            creatRefreshTokenCookie(httpServletResponse,refreshToken);
+            createRefreshTokenCookie(httpServletResponse, refreshToken);
 
-            log.info("[AuthService:registerUser] User:{} Successfully registered",savedUserDetails.getUsername());
-            return   AuthResponseDTO.builder()
+            log.info("[AuthService:registerUser] User:{} Successfully registered", savedUserDetails.getUsername());
+            return AuthResponseDTO.builder()
                     .accessToken(accessToken)
                     .accessTokenExpiry(5 * 60)
-                    .userName(savedUserDetails.getUsername())
+                    .id(savedUserDetails.getId())
                     .tokenType(TokenType.Bearer)
                     .build();
 
-
-        }catch (Exception e){
-            log.error("[AuthService:registerUser]Exception while registering the user due to :"+e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,e.getMessage());
+        } catch (UserAlreadyExistsException e) {
+            log.error("[AuthService:registerUser] User already exists: " + e.getMessage());
+            throw e; // Custom exception will be handled by GlobalExceptionHandler
+        } catch (Exception e) {
+            log.error("[AuthService:registerUser] Exception while registering the user due to: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-
     }
 
     private void saveUserRefreshToken(User user, String refreshToken) {
@@ -140,11 +133,11 @@ public class AuthService {
         refreshTokenRepository.save(refreshTokenEntity);
     }
 
-    private Cookie creatRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie refreshTokenCookie = new Cookie("refresh_token",refreshToken);
+    private Cookie createRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setMaxAge(15 * 24 * 60 * 60 );
+        refreshTokenCookie.setMaxAge(15 * 24 * 60 * 60);
         response.addCookie(refreshTokenCookie);
         return refreshTokenCookie;
     }

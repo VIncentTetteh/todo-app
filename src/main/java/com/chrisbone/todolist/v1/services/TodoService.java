@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public interface TodoService {
     TodoResponseDTO createTodo(TodoRequestDTO todo);
-    TodoResponseDTO updateTodo(UUID id, TodoRequestDTO todo);
-    void deleteTodo(UUID id);
-    TodoResponseDTO getTodoById(UUID id);
+    TodoResponseDTO updateTodo(UUID todoId, TodoRequestDTO todo);
+    void deleteTodo(UUID todoId,UUID userId);
+    TodoResponseDTO getTodoById(UUID todoId,UUID userId);
     List<TodoResponseDTO> getAllTodos();
-    List<TodoResponseDTO> getTodosByUserId(UUID id);
-    void partialUpdateTodo(UUID id, Map<String, Object> updates);
+    List<TodoResponseDTO> getTodosByUserId(UUID userId);
+    void partialUpdateTodo(UUID id,UUID userId, Map<String, Object> updates);
 }

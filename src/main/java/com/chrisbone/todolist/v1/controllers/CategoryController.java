@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/category")
+@RequestMapping("/api/v1/user/category")
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -26,38 +26,38 @@ public class CategoryController {
         return new ResponseEntity<>(categoryResponseDTO, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN') and hasAnyAuthority('SCOPE_WRITE','SCOPE_READ')")
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
         List<CategoryResponseDTO> categories = categoryService.getAllCategories();
         return new ResponseEntity<>(categories, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    @GetMapping("/{categoryId}")
-    public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable UUID categoryId) {
-        CategoryResponseDTO category = categoryService.getCategoryById(categoryId);
+@PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_READ')")
+    @GetMapping("/{userId}/{categoryId}")
+    public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable UUID userId, @PathVariable UUID categoryId) {
+        CategoryResponseDTO category = categoryService.getCategoryById(categoryId,userId);
         return new ResponseEntity<>(category, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN') and hasAuthority('SCOPE_UPDATE')")
     @PutMapping("/{categoryId}")
     public ResponseEntity<Void> updateCategory(@PathVariable UUID categoryId, @RequestBody CategoryRequestDTO categoryRequestDTO) {
         categoryService.updateCategory(categoryId, categoryRequestDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    @PatchMapping("/{categoryId}")
-    public ResponseEntity<Void> partialUpdateCategory(@PathVariable UUID categoryId, @RequestBody Map<String, Object> updates) {
-        categoryService.partialUpdateCategory(categoryId, updates);
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAnyAuthority('SCOPE_READ','SCOPE_UPDATE')")
+    @PatchMapping("/{userId}/{categoryId}")
+    public ResponseEntity<Void> partialUpdateCategory(@PathVariable UUID userId, @PathVariable UUID categoryId, @RequestBody Map<String, Object> updates) {
+        categoryService.partialUpdateCategory(categoryId,userId, updates);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    @DeleteMapping("/{categoryId}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID categoryId) {
-        categoryService.deleteCategory(categoryId);
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_DELETE')")
+    @DeleteMapping("/{userId}/{categoryId}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID userId, @PathVariable UUID categoryId) {
+        categoryService.deleteCategory(categoryId,userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -15,56 +15,50 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/todos")
+@RequestMapping("/api/v1/user/todos")
 public class TodoController {
     private final TodoService todoService;
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_WRITE')")
     @PostMapping
     public ResponseEntity<TodoResponseDTO> createTodo(@RequestBody TodoRequestDTO todoRequestDTO) {
         TodoResponseDTO todoResponseDTO = todoService.createTodo(todoRequestDTO);
         return new ResponseEntity<>(todoResponseDTO, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-    @GetMapping
-    public ResponseEntity<List<TodoResponseDTO>> getAllTodos() {
-        List<TodoResponseDTO> todos = todoService.getAllTodos();
-        return new ResponseEntity<>(todos, HttpStatus.OK);
-    }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    @GetMapping("/{todoId}")
-    public ResponseEntity<TodoResponseDTO> getTodoById(@PathVariable UUID todoId) {
-        TodoResponseDTO todo = todoService.getTodoById(todoId);
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_READ')")
+    @GetMapping("/{userId}/{todoId}")
+    public ResponseEntity<TodoResponseDTO> getTodoById(@PathVariable UUID userId, @PathVariable UUID todoId) {
+        TodoResponseDTO todo = todoService.getTodoById(todoId,userId);
         return new ResponseEntity<>(todo, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    @GetMapping("/user/{userId}")
+@PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_READ')")
+    @GetMapping("/{userId}")
     public ResponseEntity<List<TodoResponseDTO>> getTodosByUserId(@PathVariable UUID userId) {
         List<TodoResponseDTO> todos = todoService.getTodosByUserId(userId);
         return new ResponseEntity<>(todos, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_UPDATE')")
     @PutMapping("/{todoId}")
     public ResponseEntity<Void> updateTodo(@PathVariable UUID todoId, @RequestBody TodoRequestDTO todoRequestDTO) {
         todoService.updateTodo(todoId, todoRequestDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
-    @PatchMapping("/{todoId}")
-    public ResponseEntity<Void> partialUpdateTodo(@PathVariable UUID todoId, @RequestBody Map<String, Object> updates) {
-        todoService.partialUpdateTodo(todoId, updates);
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_UPATE')")
+    @PatchMapping("/{userId}/{todoId}")
+    public ResponseEntity<Void> partialUpdateTodo(@PathVariable UUID userId, @PathVariable UUID todoId, @RequestBody Map<String, Object> updates) {
+        todoService.partialUpdateTodo(todoId,userId, updates);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER')")
-    @DeleteMapping("/{todoId}")
-    public ResponseEntity<Void> deleteTodo(@PathVariable UUID todoId) {
-        todoService.deleteTodo(todoId);
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER') and hasAuthority('SCOPE_DELETE')")
+    @DeleteMapping("/{userId}/{todoId}")
+    public ResponseEntity<Void> deleteTodo(@PathVariable UUID userId, @PathVariable UUID todoId) {
+        todoService.deleteTodo(todoId,userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

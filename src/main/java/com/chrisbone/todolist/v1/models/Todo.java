@@ -43,10 +43,6 @@ public class Todo extends BaseEntity {
     @Column(name = "priority_level")
     private int priorityLevel;
 
-    @NotNull(message = "created by can not be empty")
-    @Column(name = "created_by", nullable = false)
-    private String createdBy;
-
     @ManyToOne
     @JoinColumn(name = "user_id",referencedColumnName = "id")
     private User user;

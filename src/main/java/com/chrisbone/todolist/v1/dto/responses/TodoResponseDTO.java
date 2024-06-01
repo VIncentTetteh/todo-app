@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TodoResponseDTO extends BaseResponse{
-        @JsonProperty("todoId")
+        @JsonProperty("todoID")
         private UUID id;
 
         @JsonProperty("todoTitle")
@@ -25,10 +25,18 @@ public class TodoResponseDTO extends BaseResponse{
 
         @JsonProperty("todoDueDate")
         private LocalDateTime dueDate;
+
         @JsonProperty("todoStatus")
         private String status;
+
         @JsonProperty("todoPriorityLevel")
         private int priorityLevel;
+
+        @JsonProperty("createdAt")
+        private LocalDateTime createdAt;
+
+        @JsonProperty("updatedAt")
+        private LocalDateTime updatedAt;
 
 
 }

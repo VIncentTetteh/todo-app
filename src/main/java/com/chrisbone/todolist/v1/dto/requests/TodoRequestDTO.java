@@ -4,6 +4,7 @@ import com.chrisbone.todolist.v1.models.Category;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record TodoRequestDTO(
         @NotEmpty(message = "title can not be empty")
@@ -14,6 +15,8 @@ public record TodoRequestDTO(
         LocalDateTime dueDate,
         @NotEmpty(message = "priority lever can not be empty")
         int priorityLevel,
-
-        Category category
+        @NotEmpty(message = "priority lever can not be empty")
+        UUID category_id,
+        @NotEmpty(message = "priority lever can not be empty")
+        UUID user_id
 ) { }

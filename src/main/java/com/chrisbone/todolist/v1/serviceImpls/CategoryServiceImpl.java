@@ -9,7 +9,10 @@ import com.chrisbone.todolist.v1.exceptions.TodoNotFoundException;
 import com.chrisbone.todolist.v1.exceptions.UserNotFoundException;
 import com.chrisbone.todolist.v1.models.Category;
 import com.chrisbone.todolist.v1.models.Todo;
+import com.chrisbone.todolist.v1.models.User;
 import com.chrisbone.todolist.v1.repositories.CategoryRepository;
+import com.chrisbone.todolist.v1.repositories.TodoRepository;
+import com.chrisbone.todolist.v1.repositories.UserRepository;
 import com.chrisbone.todolist.v1.services.CategoryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,23 +31,35 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final TodoRepository todoRepository;
     private final CategoryMapper categoryMapper;
-    private ModelMapper modelMapper;
+    ModelMapper modelMapper = new ModelMapper();
     @Override
     public CategoryResponseDTO createCategory(CategoryRequestDTO categoryRequestDTO) {
-        if(categoryRepository.existsByName(categoryRequestDTO.name())){
-            throw new CategoryAlreadyExistException("category already exist");
+
+
+        User user = userRepository.findById(categoryRequestDTO.user_id())
+                .orElseThrow(() -> new UserNotFoundException("User does not exist"));
+
+        boolean categoryExists = categoryRepository.existsByNameAndUserId(categoryRequestDTO.name(), categoryRequestDTO.user_id());
+
+        if (categoryExists) {
+            throw new CategoryAlreadyExistException("Category already exists for this user");
         }
+
         Category category = categoryMapper.convertToCategory(categoryRequestDTO);
-        category.setCreatedBy("");
+
+        category.setUser(user);
         Category savedCategory = categoryRepository.save(category);
         return modelMapper.map(savedCategory,CategoryResponseDTO.class);
     }
 
     @Override
-    public CategoryResponseDTO updateCategory(UUID id, CategoryRequestDTO categoryRequestDTO) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("category not found with id: " + id));
+    public CategoryResponseDTO updateCategory(UUID categoryId, CategoryRequestDTO categoryRequestDTO) {
+        Category existingCategory = categoryRepository.findByIdAndUserId(categoryId,categoryRequestDTO.user_id())
+                .orElseThrow(() -> new CategoryNotFoundException("category not found with id: " + categoryId));
+
         modelMapper.map(categoryRequestDTO,existingCategory);
         existingCategory.setUpdatedAt(LocalDateTime.now());
         Category updatedCategory = categoryRepository.save(existingCategory);
@@ -53,18 +68,20 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteCategory(UUID id) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("category not found with id: " + id));
+    public void deleteCategory(UUID categoryId, UUID user_id) {
+        Category existingCategory = categoryRepository.findByIdAndUserId(categoryId,user_id)
+                .orElseThrow(() -> new UserNotFoundException("category not found with id: " + categoryId));
 
-        categoryRepository.deleteById(id);
+        categoryRepository.deleteById(categoryId);
     }
 
     @Override
-    public CategoryResponseDTO getCategoryById(UUID id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("category not found with id: " + id));
-        return modelMapper.map(category,CategoryResponseDTO.class);
+    public CategoryResponseDTO getCategoryById(UUID categoryId,UUID user_id) {
+        Category existingCategory = categoryRepository.findByIdAndUserId(categoryId,user_id)
+                .orElseThrow(() -> new CategoryNotFoundException("category not found with id: " + categoryId));
+
+
+        return modelMapper.map(existingCategory,CategoryResponseDTO.class);
     }
 
     @Override
@@ -76,17 +93,17 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponseDTO> getCategoriesByUserId(UUID id) {
-        List<Category> categories = categoryRepository.findByUserId(id);
+    public List<CategoryResponseDTO> getCategoriesByUserId(UUID userId) {
+        List<Category> categories = categoryRepository.findByUserId(userId);
         return categories.stream()
                 .map(category -> modelMapper.map(category, CategoryResponseDTO.class))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void partialUpdateCategory(UUID id, Map<String, Object> updates) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new TodoNotFoundException("Todo not found with id: " + id));
+    public void partialUpdateCategory(UUID categoryId,UUID user_id, Map<String, Object> updates) {
+        Category existingCategory = categoryRepository.findByIdAndUserId(categoryId,user_id)
+                .orElseThrow(() -> new TodoNotFoundException("Todo not found with id: " + categoryId));
 
         // Apply partial updates to existing category
         applyPartialUpdates(existingCategory, updates);

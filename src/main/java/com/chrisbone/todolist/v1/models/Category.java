@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -21,17 +22,13 @@ import java.util.List;
 public class Category extends BaseEntity {
 
     @NotNull(message = "category name can not be null")
-    @Column(name = "name",unique = true)
+    @Column(name = "name")
     private String name;
-
-    @NotNull(message = "created by can not be empty")
-    @Column(name = "created_by", nullable = false)
-    private String createdBy;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Todo> todoList;
 
     @ManyToOne
-    @JoinColumn(name = "category_id",referencedColumnName = "id")
+    @JoinColumn(name = "user_id",referencedColumnName = "id")
     private User user;
 }

@@ -26,6 +26,7 @@ import java.util.List;
 public class AuthController {
     private final AuthService authService;
 
+
     @PostMapping("/sign-in")
     public ResponseEntity<?> authenticateUser(Authentication authentication, HttpServletResponse response){
         return ResponseEntity.ok(authService.getJwtTokensAfterAuthentication(authentication,response));

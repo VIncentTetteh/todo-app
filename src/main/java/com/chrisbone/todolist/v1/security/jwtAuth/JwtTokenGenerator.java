@@ -23,8 +23,7 @@ public class JwtTokenGenerator {
     private final JwtEncoder jwtEncoder;
 
     public String generateAccessToken(Authentication authentication) {
-
-        log.info("[JwtTokenGenerator:generateAccessToken] Token Creation Started for:{}", authentication.getName());
+        log.info("[JwtTokenGenerator:generateAccessToken] Token Creation Started for: {}", authentication.getName());
 
         String roles = getRolesOfUser(authentication);
 
@@ -33,8 +32,9 @@ public class JwtTokenGenerator {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("chrisbone")
                 .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plus(15 , ChronoUnit.MINUTES))
+                .expiresAt(Instant.now().plus(15, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
+                .claim("roles", roles)
                 .claim("scope", permissions)
                 .build();
 
@@ -51,23 +51,22 @@ public class JwtTokenGenerator {
         Set<String> permissions = new HashSet<>();
 
         if (roles.contains("ROLE_ADMIN")) {
-            permissions.addAll(List.of("READ", "WRITE", "DELETE","UPDATE"));
+            permissions.addAll(List.of("READ", "WRITE", "DELETE", "UPDATE"));
         }
         if (roles.contains("ROLE_USER")) {
-            permissions.addAll(List.of("READ", "WRITE", "DELETE","UPDATE"));
+            permissions.addAll(List.of("READ", "WRITE"));
         }
 
         return String.join(" ", permissions);
     }
 
     public String generateRefreshToken(Authentication authentication) {
-
-        log.info("[JwtTokenGenerator:generateRefreshToken] Token Creation Started for:{}", authentication.getName());
+        log.info("[JwtTokenGenerator:generateRefreshToken] Token Creation Started for: {}", authentication.getName());
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("chrisbone")
                 .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plus(15 , ChronoUnit.DAYS))
+                .expiresAt(Instant.now().plus(15, ChronoUnit.DAYS))
                 .subject(authentication.getName())
                 .claim("scope", "REFRESH_TOKEN")
                 .build();

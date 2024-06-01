@@ -12,7 +12,6 @@ public class TodoMapper {
                 .description(todoRequestDTO.description())
                 .dueDate(todoRequestDTO.dueDate())
                 .priorityLevel(todoRequestDTO.priorityLevel())
-                .category(todoRequestDTO.category())
                 .build();
     }
 }
