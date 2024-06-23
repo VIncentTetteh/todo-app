@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
-    private ModelMapper modelMapper;
+    ModelMapper modelMapper = new ModelMapper();
     @Override
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
 

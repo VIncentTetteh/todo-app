@@ -20,8 +20,10 @@ public class UserResponseDTO extends BaseResponse{
 
         @JsonProperty("userName")
         private String username;
+
         @JsonProperty("userFirstName")
         private String firstName;
+
         @JsonProperty("userLastName")
         private String lastName;
 

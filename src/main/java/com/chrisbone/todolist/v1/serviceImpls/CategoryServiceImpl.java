@@ -30,9 +30,11 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
+
     private final CategoryRepository categoryRepository;
+
     private final UserRepository userRepository;
-    private final TodoRepository todoRepository;
+//    private final TodoRepository todoRepository;
     private final CategoryMapper categoryMapper;
     ModelMapper modelMapper = new ModelMapper();
     @Override
@@ -69,7 +71,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(UUID categoryId, UUID user_id) {
-        Category existingCategory = categoryRepository.findByIdAndUserId(categoryId,user_id)
+        categoryRepository.findByIdAndUserId(categoryId,user_id)
                 .orElseThrow(() -> new UserNotFoundException("category not found with id: " + categoryId));
 
         categoryRepository.deleteById(categoryId);
